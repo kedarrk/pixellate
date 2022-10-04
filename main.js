@@ -5,7 +5,7 @@ var ctx= canvas.getContext("2d");
 var body = document.getElementsByName("Body")
 var pixels= new Array();
 var color="#000000";
-var tool=1;
+var tool=6;
 var scale=10;
 var cl = canvas.width/scale;
 var ch = canvas.height/scale;
@@ -68,7 +68,7 @@ function mouseclick(event){
 var temp;
 function mouseMove(event,x,y,temp){
     // redraw for rect
-    if(tool===2 || tool ===5)
+    if(tool===2 || tool ===5 || tool===6)
     {for(var i=0;i<cl;i++){
         for(j=0;j<ch;j++){
             colorCanvasT(i,j,temp);
@@ -82,6 +82,9 @@ function mouseMove(event,x,y,temp){
         colorrect(x/scale,y/scale,currx/scale,curry/scale);
     }if(tool === 5){
         colorcircle(x/scale,y/scale,currx/scale,curry/scale)
+    }
+    if(tool===6){
+        drawLine(x/scale,y/scale,currx/scale,curry/scale);
     }
     else{
         colorCanvas(currx/scale,curry/scale);
@@ -111,10 +114,11 @@ function colorCanvas(x,y){
 }
 // color rectangle
 function colorrect(x,y,currx,curry){
-    for(var i=Math.min(x,currx);i<=Math.max(x,currx);i++){
-        for(var j=Math.min(y,curry);j<=Math.max(y,curry);j++){
+    for(var i=Math.floor(Math.min(x,currx));i<=Math.floor(Math.max(x,currx));i++){
+        for(var j=Math.floor(Math.min(y,curry));j<=Math.floor(Math.max(y,curry));j++){
             
-            colorCanvas(Math.floor(i),Math.floor(j));
+            colorCanvas((i),(j));
+            //console.log(i,j);
         }
     }
 }
@@ -181,11 +185,6 @@ function fillcolor(x,y){
         }
     }
 }
-//line tool
-function lineDraw(x,y){
-    x=Math.floor(x);
-    y=Math.floor(y);
-}
 // tool selector
 var toolactive= document.getElementById("toolAct")
 
@@ -193,31 +192,32 @@ var toolactive= document.getElementById("toolAct")
 var rect=document.getElementById("rectBtn");
 rect.addEventListener("click" , function click(){
 onBtnclick(2)
-toolactive.innerText='tool:' + "Rect";
+toolactive.innerHTML="<p>tool: <img src=\"./"+`rect`+".png\" height=\"20\" widht=\"20\" align=\"center\"></p>"
 });
 
 var fill=document.getElementById("fillBtn");
 fill.addEventListener("click", function click(){
-    toolactive.innerText='tool:' + "Fill";
+    toolactive.innerHTML="<p>tool: <img src=\"./"+`fill`+".png\" height=\"20\" widht=\"20\" align=\"center\"></p>"
     onBtnclick(3);
     
 } );
 
 var draw=document.getElementById("drawBtn");
 draw.addEventListener("click", function click(){
-    toolactive.innerText='tool:' + "Draw";
+    toolactive.innerHTML="<p>tool: <img src=\"./"+`draw`+".png\" height=\"20\" widht=\"20\" align=\"center\"></p>"
     onBtnclick(1);
 } );
 
 var circle=document.getElementById("circleBtn")
 circle.addEventListener("click", function click(){
-    toolactive.innerText='tool:' + "Circle";
+    toolactive.innerHTML="<p>tool: <img src=\"./"+`circle`+".png\" height=\"20\" widht=\"20\" align=\"center\"></p>"
     onBtnclick(5);
 } );
 
 function onBtnclick(btn){
   //  console.log(btn);
     tool=btn;
+   // toolactive.innerHTML="<p>tool: <img src=\"./"+`${tool}`+".png\" height=\"20\" widht=\"20\"></p>"
 }
 
 //color picker
@@ -252,7 +252,7 @@ function undoFunction(){
 //color detector
 var colorDetect = document.getElementById("colorDetect");
 colorDetect.addEventListener("click", function click(){
-    toolactive.innerText='tool:' + "Pick";
+    toolactive.innerHTML="<p>tool: <img src=\"./"+`pick`+".png\" height=\"20\" widht=\"20\" align=\"center\"></p>"
     onBtnclick(4);
 } );
 
@@ -266,21 +266,65 @@ function colorDetection(x,y){
 
 
 // line draw
-// drawLine(0,0,13,49)
-// function drawLine(startX,startY,endX,endY){
-//     var slope=(endY-startY)/(endX-startX);
-//     var currSlope=1000;
-//     for(var i=startX+1;i<cl;i++){
-//         for(var j=startY+1;j<ch;j++){
-//             currSlope=(j-startY)/(i-startX);
-//             if(currSlope<slope){
-//                 var x=i;
-//                 var y=j;
-//             }
-//         }
-//         colorCanvas(x,y);
-//     }
-// }
+var lineDetect = document.getElementById("lineBtn");
+lineDetect.addEventListener("click", function click(){
+    toolactive.innerHTML="<p>tool: <img src=\"./"+`line`+".png\" height=\"20\" widht=\"20\" align=\"center\"></p>"
+    onBtnclick(6);
+} );
+//  drawLine(0,0,13,49)
+function sign(x){
+if(x>0)
+    return 1;
+else if(x<0)
+    return -1;
+else
+    return 0;
+}
+
+
+function drawLine( x1, y1,  x2,  y2)
+{
+    var x,y,dx,dy,swap,temp,s1,s2,p,i;
+    x2=Math.min(canvas.width/scale,x2);
+    y2=Math.min(canvas.height/scale,y2);
+    x2=Math.max(0,x2);
+    y2=Math.max(0,y2);
+    x=x1;
+    y=y1;
+    dx=Math.abs(x2-x1);
+    dy=Math.abs(y2-y1);
+    s1=sign(x2-x1);
+    s2=sign(y2-y1);
+    swap=0;
+    colorCanvas(x1,y1);
+    if(dy>dx){
+        temp=dx;
+        dx=dy;
+        dy=temp;
+        swap=1;
+    }
+    p=2*dy-dx;
+    for(i=0;i<dx;i++){
+        colorCanvas(x,y)
+        while(p>=0){
+        p=p-2*dx;
+        if(swap)
+            x+=s1;
+        else
+            y+=s2;
+        }
+        p=p+2*dy;
+        if(swap)
+            y+=s2;
+        else
+            x+=s1;
+    }
+    colorCanvas(x,y);
+}
+
+
+
+
 
 var download = document.getElementById("downBtn");
 download.addEventListener("click",downloadfn);
@@ -293,5 +337,6 @@ function downloadfn(){
 }
 
 // too active
-var activeTool="Draw";
-toolactive.innerText='tool:' + `${activeTool}`;
+var activeTool="draw";
+//toolactive.innerHTML='tool:' + `${activeTool}`;
+toolactive.innerHTML="<p>tool: <img src=\"./"+`${activeTool}`+".png\" height=\"20\" widht=\"20\" align=\"center\"></p>"
