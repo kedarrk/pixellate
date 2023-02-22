@@ -45,7 +45,7 @@
   -webkit-user-select: none;
   touch-action: manipulation;
   vertical-align: baseline;
-  width: static;
+  width: auto;
 }
 
 .button-6:hover,
